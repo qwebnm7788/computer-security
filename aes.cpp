@@ -5,7 +5,7 @@
 #include <algorithm>
 using namespace std;
 
-/* //debugging
+ //debugging SBox
 static const uint8_t r_sbox[256] = {
 	//0     1    2      3     4    5     6     7      8    9     A      B    C     D     E     F
 	0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76,
@@ -24,7 +24,29 @@ static const uint8_t r_sbox[256] = {
 	0x70, 0x3e, 0xb5, 0x66, 0x48, 0x03, 0xf6, 0x0e, 0x61, 0x35, 0x57, 0xb9, 0x86, 0xc1, 0x1d, 0x9e,
 	0xe1, 0xf8, 0x98, 0x11, 0x69, 0xd9, 0x8e, 0x94, 0x9b, 0x1e, 0x87, 0xe9, 0xce, 0x55, 0x28, 0xdf,
 	0x8c, 0xa1, 0x89, 0x0d, 0xbf, 0xe6, 0x42, 0x68, 0x41, 0x99, 0x2d, 0x0f, 0xb0, 0x54, 0xbb, 0x16 };
-	*/
+	
+//debugging InvSbox
+static const uint8_t aes_sbox_inv_table[256u] =
+{
+	0x52, 0x09, 0x6A, 0xD5, 0x30, 0x36, 0xA5, 0x38, 0xBF, 0x40, 0xA3, 0x9E, 0x81, 0xF3, 0xD7, 0xFB,
+	0x7C, 0xE3, 0x39, 0x82, 0x9B, 0x2F, 0xFF, 0x87, 0x34, 0x8E, 0x43, 0x44, 0xC4, 0xDE, 0xE9, 0xCB,
+	0x54, 0x7B, 0x94, 0x32, 0xA6, 0xC2, 0x23, 0x3D, 0xEE, 0x4C, 0x95, 0x0B, 0x42, 0xFA, 0xC3, 0x4E,
+	0x08, 0x2E, 0xA1, 0x66, 0x28, 0xD9, 0x24, 0xB2, 0x76, 0x5B, 0xA2, 0x49, 0x6D, 0x8B, 0xD1, 0x25,
+	0x72, 0xF8, 0xF6, 0x64, 0x86, 0x68, 0x98, 0x16, 0xD4, 0xA4, 0x5C, 0xCC, 0x5D, 0x65, 0xB6, 0x92,
+	0x6C, 0x70, 0x48, 0x50, 0xFD, 0xED, 0xB9, 0xDA, 0x5E, 0x15, 0x46, 0x57, 0xA7, 0x8D, 0x9D, 0x84,
+	0x90, 0xD8, 0xAB, 0x00, 0x8C, 0xBC, 0xD3, 0x0A, 0xF7, 0xE4, 0x58, 0x05, 0xB8, 0xB3, 0x45, 0x06,
+	0xD0, 0x2C, 0x1E, 0x8F, 0xCA, 0x3F, 0x0F, 0x02, 0xC1, 0xAF, 0xBD, 0x03, 0x01, 0x13, 0x8A, 0x6B,
+	0x3A, 0x91, 0x11, 0x41, 0x4F, 0x67, 0xDC, 0xEA, 0x97, 0xF2, 0xCF, 0xCE, 0xF0, 0xB4, 0xE6, 0x73,
+	0x96, 0xAC, 0x74, 0x22, 0xE7, 0xAD, 0x35, 0x85, 0xE2, 0xF9, 0x37, 0xE8, 0x1C, 0x75, 0xDF, 0x6E,
+	0x47, 0xF1, 0x1A, 0x71, 0x1D, 0x29, 0xC5, 0x89, 0x6F, 0xB7, 0x62, 0x0E, 0xAA, 0x18, 0xBE, 0x1B,
+	0xFC, 0x56, 0x3E, 0x4B, 0xC6, 0xD2, 0x79, 0x20, 0x9A, 0xDB, 0xC0, 0xFE, 0x78, 0xCD, 0x5A, 0xF4,
+	0x1F, 0xDD, 0xA8, 0x33, 0x88, 0x07, 0xC7, 0x31, 0xB1, 0x12, 0x10, 0x59, 0x27, 0x80, 0xEC, 0x5F,
+	0x60, 0x51, 0x7F, 0xA9, 0x19, 0xB5, 0x4A, 0x0D, 0x2D, 0xE5, 0x7A, 0x9F, 0x93, 0xC9, 0x9C, 0xEF,
+	0xA0, 0xE0, 0x3B, 0x4D, 0xAE, 0x2A, 0xF5, 0xB0, 0xC8, 0xEB, 0xBB, 0x3C, 0x83, 0x53, 0x99, 0x61,
+	0x17, 0x2B, 0x04, 0x7E, 0xBA, 0x77, 0xD6, 0x26, 0xE1, 0x69, 0x14, 0x63, 0x55, 0x21, 0x0C, 0x7D
+};
+
+
 static const unsigned char SBox[256] = {
 	0xD4, 0xAD, 0x82, 0x7D, 0xA2, 0x59, 0xF0, 0xAF, 0x9C, 0xA4, 0x72, 0xC0, 0xCA, 0xC9, 0xFA, 0x47,
 	0xA5, 0x34, 0xFD, 0x26, 0xE5, 0x3F, 0xCC, 0xF1, 0x71, 0xD8, 0x31, 0x15, 0xB7, 0x93, 0x36, 0xF7,
@@ -46,6 +68,9 @@ static const unsigned char SBox[256] = {
 
 const string plainTextFile= "pt.bin";
 const string keyFile = "key.bin";
+const string cipherTextFile = "ct.bin";
+const string decrpytFile = "pt2.bin";
+
 const int BUFSIZE = 512;
 const int BLKSIZE = 16;
 const int EXPANDEDKEY = 44;
@@ -78,29 +103,27 @@ unsigned char multInGf(unsigned char a, unsigned char b) {
 	unsigned char result = 0;
 	bool flag = false;				//최상위 비트(index 7)이 1로 set되어 있는지의 여부
 	for (int i = 0; i < 8; ++i) {
-		if (b & 1) {
-			//곱하는 수의 최하위 비트가 set되어 있다면 연산을 진행함
-			//flag가 true인 경우 MOD값을 추가로 XOR해주어야 한다.
-			if (result == 0){		//한번도 수행되지 않았다면 result에 대입
-				if (flag)
-					result = (a ^ MOD);
-				else
-					result = a;
+		if (b & (1 << i)) {
+			//i번 비트가 set되어 있는 경우 덧셈을 진행한다.
+			if (result == 0) {
+				result = a;
 			}
-			else {					//두번째 연산부터는 result와 XOR를 진행
-				if (flag)
-					result ^= (a ^ MOD);
-				else
-					result ^= a;
+			else {
+				result ^= a;
 			}
 		}
-		b >>= 1;
+
 		if (a & (1 << 7)) {
 			//최상위 비트(index 7)이 set되어 있다면 flag를 true로 바꾸어 준다.
-			a &= (~(1 << 7));
 			flag = true;
 		}
+
 		a <<= 1;
+
+		if (flag) {
+			a ^= MOD;
+			flag = false;
+		}
 	}
 	return result;
 }
@@ -115,17 +138,53 @@ void addRoundKey(const WORD* roundKey, unsigned char state[]) {
 	}
 }
 
+void invAddRoundKey(const WORD* roundkey, unsigned char state[]) {
+	//xor연산의 특성을 이용하여 역연산을 진행
+	addRoundKey(roundkey, state);
+}
+
 void subByte(unsigned char state[]) {
 	for (int i = 0; i < BLKSIZE; ++i) {
 		state[i] = SBox[(state[i] & 0xF0) + (state[i] & 0x0F)];
+		//state[i] = r_sbox[(state[i] & 0xf0) + (state[i] & 0x0f)];
+	}
+}
+
+void invSubByte(unsigned char state[]) {
+	/* //debug
+	for (int i = 0; i < BLKSIZE; ++i) {
+		state[i] = aes_sbox_inv_table[(state[i] & 0xf0) + (state[i] & 0x0f)];
+	}
+	*/
+	int found;
+	for (int i = 0; i < BLKSIZE; ++i) {
+		for (int j = 0; j < 256; ++j) {
+			if (SBox[j] == state[i]) {
+				found = j;
+			}
+		}
+		state[i] = ((found / BLKSIZE) << 4) + (found % BLKSIZE);
 	}
 }
 
 void shiftRow(unsigned char state[]) {
+	/* //debug
 	int hold;
 	for (int i = 0; i < 4; ++i) {
 		for (int k = 0; k < i; ++k) {
-			//한번 오른쪽 시프트
+			//one byte left shift
+			hold = state[i];
+			for (int j = 0; j < 3; ++j) {
+				state[i + 4 * j] = state[i + 4 * (j + 1)];
+			}
+			state[i + 4 * 3] = hold;
+		}
+	}
+	*/
+	int hold;
+	for (int i = 0; i < 4; ++i) {
+		for (int k = 0; k < i; ++k) {
+			//one byte right shift
 			hold = state[i + 4 * 3];
 			for (int j = 3; j >= 1; --j) {
 				state[i + 4 * j] = state[i + 4 * (j - 1)];
@@ -135,13 +194,54 @@ void shiftRow(unsigned char state[]) {
 	}
 }
 
+void invShiftRow(unsigned char state[]) {
+	/* //debug
+	int hold;
+	for (int i = 0; i < 4; ++i) {
+		for (int k = 0; k < i; ++k) {
+			//one byte right shift
+			hold = state[i + 4 * 3];
+			for (int j = 3; j >= 1; --j) {
+				state[i + 4 * j] = state[i + 4 * (j - 1)];
+			}
+			state[i] = hold;
+		}
+	}
+	*/
+	int hold;
+	for (int i = 0; i < 4; ++i) {
+		for (int k = 0; k < i; ++k) {
+			//one byte left shift
+			hold = state[i];
+			for (int j = 0; j < 3; ++j) {
+				state[i + 4 * j] = state[i + 4 * (j + 1)];
+			}
+			state[i + 4 * 3] = hold;
+		}
+	}
+}
+
 void mixColumn(unsigned char state[]) {
 	unsigned char result[BLKSIZE];
+	//행렬곱셈을 GF(2^8)에서 진행하였다.
 	for (int i = 0; i < 4; ++i) {
 		result[4 * i] = multInGf(0x02, state[4 * i]) ^ multInGf(0x03, state[4 * i + 1]) ^ state[4 * i + 2] ^ state[4 * i + 3];
 		result[4 * i + 1] = state[4 * i] ^ multInGf(0x02, state[4 * i + 1]) ^ multInGf(0x03, state[4 * i + 2]) ^ state[4 * i + 3];
 		result[4 * i + 2] = state[4 * i] ^ state[4 * i + 1] ^ multInGf(0x02, state[4 * i + 2]) ^ multInGf(0x03, state[4 * i + 3]);
 		result[4 * i + 3] = multInGf(0x03, state[4 * i]) ^ state[4 * i + 1] ^ state[4 * i + 2] ^ multInGf(0x02, state[4 * i + 3]);
+	}
+	for (int i = 0; i < BLKSIZE; ++i) {
+		state[i] = result[i];
+	}
+}
+
+void invMixColumn(unsigned char state[]) {
+	unsigned char result[BLKSIZE];
+	for (int i = 0; i < 4; ++i) {
+		result[4 * i] = multInGf(0x0e, state[4 * i]) ^ multInGf(0x0b, state[4 * i + 1]) ^ multInGf(0x0d, state[4 * i + 2]) ^ multInGf(0x09, state[4 * i + 3]);
+		result[4 * i + 1] = multInGf(0x09, state[4 * i]) ^ multInGf(0x0e, state[4 * i + 1]) ^ multInGf(0x0b, state[4 * i + 2]) ^ multInGf(0x0d, state[4 * i + 3]);
+		result[4 * i + 2] = multInGf(0x0d, state[4 * i]) ^ multInGf(0x09, state[4 * i + 1]) ^ multInGf(0x0e, state[4 * i + 2]) ^ multInGf(0x0b, state[4 * i + 3]);
+		result[4 * i + 3] = multInGf(0x0b, state[4 * i]) ^ multInGf(0x0d, state[4 * i + 1]) ^ multInGf(0x09, state[4 * i + 2]) ^ multInGf(0x0e, state[4 * i + 3]);
 	}
 	for (int i = 0; i < BLKSIZE; ++i) {
 		state[i] = result[i];
@@ -155,7 +255,7 @@ void printHex(const unsigned char target[]) {
 }
 
 //for debug
-string printBinary(int x) {
+void printBinary(unsigned char x) {
 	string result = "";
 	for (int i = 0; i < 8; ++i) {
 		if (x % 2)
@@ -165,7 +265,7 @@ string printBinary(int x) {
 		x /= 2;
 	}
 	reverse(result.begin(), result.end());
-	return result;
+	cout << result;
 }
 
 
@@ -225,11 +325,12 @@ void keyExpansion(const unsigned char key[BLKSIZE], WORD wd[WORDSIZE * NUMOFROUN
 }
 
 int main() {
-	ifstream textIn(plainTextFile, ios::in | ios::binary);
-	ifstream keyIn(keyFile, ios::out | ios::binary);
+	ifstream plaintextIn(plainTextFile, ios::in | ios::binary);
+	ifstream keyIn(keyFile, ios::in | ios::binary);
+	ofstream cipherOut(cipherTextFile, ios::out | ios::binary);
+	ofstream decryptOut(decrpytFile, ios::out | ios::binary);
 	
-	
-	if (!textIn.is_open() || !keyIn.is_open()) {
+	if (!plaintextIn.is_open() || !keyIn.is_open()) {
 		cerr << "error occur while opening file\n";
 		exit(1);
 	}
@@ -238,18 +339,23 @@ int main() {
 	unsigned char state[BLKSIZE];
 	WORD roundKey[WORDSIZE * NUMOFROUNDS];
 
-	//read key
-	for (int i = 0; keyIn.read((char*)&key[i], 1); ++i);
-	cout << "key : ";
-	printHex(key);
+	//key 입력 시작
+	for (int i = 0; i < BLKSIZE; ++i)
+		keyIn.read((char*)&key[i], 1);
 
-	//read plain text
-	for (int i = 0; textIn.read((char*)&state[i], 1); ++i);
+	keyIn.close();
+	//key 입력 종료
+
+	keyExpansion(key, roundKey);
+
+	//plainText 입력 및 encryption 시작
+	for (int i = 0; i < BLKSIZE; ++i)
+		plaintextIn.read((char*)&state[i], 1);
+
 	cout << "Input plain text : ";
 	printHex(state);
 	cout << endl;
 
-	keyExpansion(key, roundKey);
 
 	for (int i = 0; i < NUMOFROUNDS; ++i) {
 		cout << "ROUND " << dec << i << endl;
@@ -279,15 +385,47 @@ int main() {
 		printHex(state);
 
 	}
-
+	//ct2.bin 파일에 값 저장
+	cipherOut.write((char*)state, BLKSIZE);
+	cipherOut.close();
 	cout << endl << endl;
+
 	cout << "Result Encryption: ";
 	printHex(state);
 
-	//encryption end
+	plaintextIn.close();
+	//plainText 입력 및 encryption 종료
 
-	//decryption begin
+	//cipherText 입력 및 decryption 시작
+	ifstream cipherTextIn(cipherTextFile, ios::in | ios::binary);
 
+	for (int i = 0; i < BLKSIZE; ++i)
+		cipherTextIn.read((char*)&state[i], 1);
 
+	
+	for (int i = 0; i < NUMOFROUNDS; ++i) {
+		if (i != 0) {
+			//invShiftRow
+			invShiftRow(state);
+
+			//invSubBytes
+			invSubByte(state);
+		}
+
+		//invAddRoundKey  복호화 시에는 키의 순서가 반대임에 주의
+		invAddRoundKey(roundKey + 4 * (NUMOFROUNDS - 1 - i), state);
+
+		if (i != 0 && i != NUMOFROUNDS - 1) {
+			//invMixColumn
+			invMixColumn(state);
+		}
+		
+	}
+
+	cout << "Result Decryption: ";
+	printHex(state);
+	decryptOut.write((char*)state, BLKSIZE);
+
+	decryptOut.close();
 	return 0;
 }
